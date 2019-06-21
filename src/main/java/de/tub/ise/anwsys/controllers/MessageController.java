@@ -5,26 +5,33 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @RestController
-@RequestMapping("/channels/{id}/messages[?lastSeenTimestamp]")
+@RequestMapping("/channels/{id}/messages")
 public class MessageController {
 
     @GetMapping(produces = "text/html")
-    public ResponseEntity<?> getChannelMessageList(@PathVariable("id") long id,
-                                                   @RequestParam(value = "lastSeenTimestamp", required = false)
-                                                   @DateTimeFormat(iso=DateTimeFormat.ISO.DATE_TIME) LocalDateTime timestamp) {
+    public ResponseEntity<?> getMessageList(@PathVariable("id") long id,
+                                            @RequestParam(value = "lastSeenTimestamp", required = false)
+                                            @DateTimeFormat(iso=DateTimeFormat.ISO.DATE_TIME) Optional<LocalDateTime> timestamp) {
 
-
-        return null;
+        if (timestamp.isPresent()) {
+            return ResponseEntity.ok("Got message list for channelId: "+ id +" and timestamp: "+ timestamp.get().toString());
+        } else {
+            return ResponseEntity.ok("Got message list for channelId: "+ id);
+        }
     }
 
     @PostMapping(produces = "text/html")
     public ResponseEntity<?> createMessage(@PathVariable("id") long id,
                                            @RequestParam(value = "lastSeenTimestamp", required = false)
-                                           @DateTimeFormat(iso=DateTimeFormat.ISO.DATE_TIME) LocalDateTime timestamp) {
+                                           @DateTimeFormat(iso=DateTimeFormat.ISO.DATE_TIME) Optional<LocalDateTime> timestamp) {
 
-
-        return null;
+        if (timestamp.isPresent()) {
+            return ResponseEntity.ok("Created message list for channelId: "+ id +" and timestamp: "+ timestamp.get().toString());
+        } else {
+            return ResponseEntity.ok("Created message list for channelId: "+ id);
+        }
     }
 }

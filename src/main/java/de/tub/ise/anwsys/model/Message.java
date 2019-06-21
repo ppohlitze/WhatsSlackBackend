@@ -16,7 +16,7 @@ public class Message {
     private String content;
 
     @ManyToOne
-    private String author;
+    private User author;
 
     @ManyToOne
     private Channel channel;
@@ -45,11 +45,11 @@ public class Message {
         this.content = content;
     }
 
-    public String getAuthor() {
+    public User getAuthor() {
         return author;
     }
 
-    public void setAuthor(String author) {
+    public void setAuthor(User author) {
         this.author = author;
     }
 
