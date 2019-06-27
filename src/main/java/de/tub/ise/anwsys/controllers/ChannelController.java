@@ -5,6 +5,7 @@ import de.tub.ise.anwsys.repositories.ChannelRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,13 +26,13 @@ public class ChannelController {
     public ResponseEntity<?> getChannels(@RequestParam(value = "page", required = false) Optional<Integer> page,
                                          @RequestParam(value = "size", required = false) Optional<Integer> size) {
         if (page.isPresent() && size.isPresent()) {
-            return ResponseEntity.ok("Got channels on page: "+ page.get() +" and size: "+ size.get());
+            return ResponseEntity.ok(channelRepository.findAll(PageRequest.of(page.get(), size.get())));
         } else if (page.isPresent() && !size.isPresent()) {
-            return ResponseEntity.ok("Got channels on page: "+ page.get());
+            return ResponseEntity.ok(channelRepository.findAll(PageRequest.of(page.get(), 20)));
         } else if (!page.isPresent() && size.isPresent()) {
-            return ResponseEntity.ok("Got channels with size: "+ size.get());
+            return ResponseEntity.ok(channelRepository.findAll(PageRequest.of(0, size.get())));
         } else {
-            return ResponseEntity.ok(channelRepository.findAll());
+            return ResponseEntity.ok(channelRepository.findAll(PageRequest.of(0, 20)));
         }
     }
 
@@ -45,7 +46,7 @@ public class ChannelController {
         }
     }
 
-    @PostMapping(consumes = "application/json", produces = "application/json")
+    @PostMapping(consumes = "application/json")
     public ResponseEntity<?> createChannel(@RequestBody Channel channel)     {
 
         if (channelRepository.findByName(channel.getName()) != null) {
@@ -55,9 +56,7 @@ public class ChannelController {
         } else {
 
             channelRepository.save(channel);
-
             LOGGER.info("Persisting: "+ channel.toString());
-
             URI location = null;
 
             try {
@@ -66,7 +65,7 @@ public class ChannelController {
                 LOGGER.error("URI Syntax wasn't valid", e);
             }
 
-            return ResponseEntity.created(location).build();
+            return ResponseEntity.created(location).body(channel);
         }
     }
 }

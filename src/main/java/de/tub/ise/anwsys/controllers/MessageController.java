@@ -5,6 +5,7 @@ import de.tub.ise.anwsys.repositories.MessageRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,9 +28,9 @@ public class MessageController {
                                             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Optional<LocalDateTime> timestamp) {
 
         if (timestamp.isPresent()) {
-            return ResponseEntity.ok(messageRepository.findMessagesByChannelId(id));
+            return ResponseEntity.ok(messageRepository.findMessagesNewerThanTimestamp(timestamp.get(), id));
         } else {
-            return ResponseEntity.ok(messageRepository.findMessagesByChannelId(id));
+            return ResponseEntity.ok(messageRepository.findMessagesByChannelId(id, PageRequest.of(0, 10)));
         }
     }
 
@@ -40,13 +41,11 @@ public class MessageController {
                                            @RequestBody Message message) {
 
         message.setChannelId(id);
-
         messageRepository.save(message);
-
         LOGGER.info("Persisting: "+ message.toString());
 
         if (timestamp.isPresent()) {
-            return ResponseEntity.ok(message);
+            return ResponseEntity.ok(messageRepository.findMessagesNewerThanTimestamp(timestamp.get(), id));
         } else {
             return ResponseEntity.ok(message);
         }
