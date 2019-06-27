@@ -2,26 +2,24 @@ package de.tub.ise.anwsys.model;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.ManyToOne;
 import java.time.LocalDateTime;
 
 @Entity
 public class Message {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    private LocalDateTime timestamp;
+    private LocalDateTime timestamp = LocalDateTime.now();
 
     private String content;
 
-    @ManyToOne
-    private User author;
+    private String creator;
 
-    @ManyToOne
-    private Channel channel;
+    private long channelId;
 
     public long getId() {
         return id;
@@ -47,19 +45,30 @@ public class Message {
         this.content = content;
     }
 
-    public User getAuthor() {
-        return author;
+    public String getCreator() {
+        return creator;
     }
 
-    public void setAuthor(User author) {
-        this.author = author;
+    public void setCreator(String creator) {
+        this.creator = creator;
     }
 
-    public Channel getChannel() {
-        return channel;
+    public long getChannelId() {
+        return channelId;
     }
 
-    public void setChannel(Channel channel) {
-        this.channel = channel;
+    public void setChannelId(long channelId) {
+        this.channelId = channelId;
+    }
+
+    @Override
+    public String toString() {
+        return "Message{" +
+                "id=" + id +
+                ", timestamp=" + timestamp +
+                ", content='" + content + '\'' +
+                ", creator='" + creator + '\'' +
+                ", channelId=" + channelId +
+                '}';
     }
 }

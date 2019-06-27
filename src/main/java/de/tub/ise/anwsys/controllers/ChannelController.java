@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Optional;
 
 @RestController
@@ -36,16 +38,35 @@ public class ChannelController {
     @GetMapping(value = "{id}", produces = "application/json")
     public ResponseEntity<?> getChannelInformation(@PathVariable("id") long id) {
 
-        return ResponseEntity.ok(channelRepository.findById(id));
+        if (channelRepository.findById(id).isPresent()) {
+            return ResponseEntity.ok(channelRepository.findById(id).get());
+        } else {
+            return ResponseEntity.status(404).build();
+        }
     }
 
     @PostMapping(consumes = "application/json", produces = "application/json")
-    public ResponseEntity<?> createChannel(@RequestBody Channel channel) {
+    public ResponseEntity<?> createChannel(@RequestBody Channel channel)     {
 
-        channelRepository.save(channel);
+        if (channelRepository.findByName(channel.getName()) != null) {
 
-        LOGGER.info("Persisting: "+ channel.toString());
+            return ResponseEntity.status(409).build();
 
-        return ResponseEntity.ok(channel);
+        } else {
+
+            channelRepository.save(channel);
+
+            LOGGER.info("Persisting: "+ channel.toString());
+
+            URI location = null;
+
+            try {
+                location = new URI("localhost:8080/channels/"+ channel.getId());
+            } catch (URISyntaxException e) {
+                LOGGER.error("URI Syntax wasn't valid", e);
+            }
+
+            return ResponseEntity.created(location).build();
+        }
     }
 }

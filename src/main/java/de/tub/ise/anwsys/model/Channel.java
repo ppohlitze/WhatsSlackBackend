@@ -2,26 +2,19 @@ package de.tub.ise.anwsys.model;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import java.util.List;
 
 @Entity
 public class Channel {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
     private String name;
 
     private String topic;
-
-    @OneToMany
-    private List<User> users;
-
-    @OneToMany
-    private List<Message> messages;
 
     public long getId() {
         return id;
@@ -47,30 +40,12 @@ public class Channel {
         this.topic = topic;
     }
 
-    public List<User> getUsers() {
-        return users;
-    }
-
-    public void setUsers(List<User> users) {
-        this.users = users;
-    }
-
-    public List<Message> getMessages() {
-        return messages;
-    }
-
-    public void setMessages(List<Message> messages) {
-        this.messages = messages;
-    }
-
     @Override
     public String toString() {
         return "Channel{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", topic='" + topic + '\'' +
-                ", users=" + users +
-                ", messages=" + messages +
                 '}';
     }
 }
