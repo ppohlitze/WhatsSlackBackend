@@ -14,7 +14,7 @@ public class MessageController {
     @GetMapping(produces = "text/html")
     public ResponseEntity<?> getMessageList(@PathVariable("id") long id,
                                             @RequestParam(value = "lastSeenTimestamp", required = false)
-                                            @DateTimeFormat(iso=DateTimeFormat.ISO.DATE_TIME) Optional<LocalDateTime> timestamp) {
+                                            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Optional<LocalDateTime> timestamp) {
 
         if (timestamp.isPresent()) {
             return ResponseEntity.ok("Got message list for channelId: "+ id +" and timestamp: "+ timestamp.get().toString());

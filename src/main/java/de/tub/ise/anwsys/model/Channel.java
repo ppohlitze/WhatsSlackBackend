@@ -62,4 +62,15 @@ public class Channel {
     public void setMessages(List<Message> messages) {
         this.messages = messages;
     }
+
+    @Override
+    public String toString() {
+        return "Channel{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", topic='" + topic + '\'' +
+                ", users=" + users +
+                ", messages=" + messages +
+                '}';
+    }
 }

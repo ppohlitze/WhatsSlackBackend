@@ -1,6 +1,7 @@
 package de.tub.ise.anwsys.model;
 
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import java.time.LocalDateTime;
@@ -9,6 +10,7 @@ import java.time.LocalDateTime;
 public class Message {
 
     @Id
+    @GeneratedValue
     private long id;
 
     private LocalDateTime timestamp;

@@ -1,22 +1,30 @@
 package de.tub.ise.anwsys.model;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 import java.util.List;
 
 @Entity
 public class User {
 
     @Id
-    String name;
+    @GeneratedValue
+    private long id;
+
+    private String name;
 
     @OneToMany
     private List<Message> messages;
 
     @ManyToOne
     private Channel channel;
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
 
     public String getName() {
         return name;

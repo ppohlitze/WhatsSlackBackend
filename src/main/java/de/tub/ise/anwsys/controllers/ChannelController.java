@@ -1,5 +1,10 @@
 package de.tub.ise.anwsys.controllers;
 
+import de.tub.ise.anwsys.model.Channel;
+import de.tub.ise.anwsys.repositories.ChannelRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -9,7 +14,12 @@ import java.util.Optional;
 @RequestMapping("/channels")
 public class ChannelController {
 
-    @GetMapping(produces = "text/html")
+    private final Logger LOGGER = LoggerFactory.getLogger(ChannelController.class);
+
+    @Autowired
+    ChannelRepository channelRepository;
+
+    @GetMapping(produces = "application/json")
     public ResponseEntity<?> getChannels(@RequestParam(value = "page", required = false) Optional<Integer> page,
                                          @RequestParam(value = "size", required = false) Optional<Integer> size) {
         if (page.isPresent() && size.isPresent()) {
@@ -19,19 +29,23 @@ public class ChannelController {
         } else if (!page.isPresent() && size.isPresent()) {
             return ResponseEntity.ok("Got channels with size: "+ size.get());
         } else {
-            return ResponseEntity.ok("Got channels with no information");
+            return ResponseEntity.ok(channelRepository.findAll());
         }
     }
 
-    @GetMapping(value = "{id}", produces = "text/html")
+    @GetMapping(value = "{id}", produces = "application/json")
     public ResponseEntity<?> getChannelInformation(@PathVariable("id") long id) {
 
-        return ResponseEntity.ok("Got Information for channel with id: "+ id);
+        return ResponseEntity.ok(channelRepository.findById(id));
     }
 
-    @PostMapping(produces = "text/html")
-    public ResponseEntity<?> createChannel() {
+    @PostMapping(consumes = "application/json", produces = "application/json")
+    public ResponseEntity<?> createChannel(@RequestBody Channel channel) {
 
-        return ResponseEntity.ok("Channel was created");
+        channelRepository.save(channel);
+
+        LOGGER.info("Persisting: "+ channel.toString());
+
+        return ResponseEntity.ok(channel);
     }
 }
