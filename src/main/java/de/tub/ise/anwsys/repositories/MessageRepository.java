@@ -12,13 +12,13 @@ import java.util.List;
 
 public interface MessageRepository extends PagingAndSortingRepository<Message, Long> {
 
-    @Query("SELECT m from Message AS m WHERE channelId = :channelId")
-    Page<Message> findMessagesByChannelId(@Param("channelId") long channelId, Pageable pageable);
-
     @Query("SELECT DISTINCT m.creator from Message AS m WHERE channelId = :channelId")
     List<String> findUniqueCreatorsByChannelId(@Param("channelId") long channelId);
 
+    @Query("SELECT m from Message AS m WHERE channelId = :channelId ORDER BY m.timestamp DESC")
+    Page<Message> findLast10Messages(@Param("channelId") long channelId, Pageable pageable);
+
     @Query("SELECT m from Message AS m WHERE channelId = :channelId AND timestamp >= :timestamp")
-    List<Message> findMessagesNewerThanTimestamp(@Param("timestamp") LocalDateTime timestamp, @Param("channelId") long channelId);
+    Page<Message> findMessagesNewerThanTimestamp(@Param("timestamp") LocalDateTime timestamp, @Param("channelId") long channelId, Pageable pageable);
 
 }

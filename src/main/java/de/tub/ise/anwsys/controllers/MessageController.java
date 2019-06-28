@@ -5,6 +5,7 @@ import de.tub.ise.anwsys.repositories.MessageRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -19,18 +20,26 @@ public class MessageController {
 
     private final Logger LOGGER = LoggerFactory.getLogger(MessageController.class);
 
+    @Value("${token}")
+    private String token;
+
     @Autowired
     MessageRepository messageRepository;
 
     @GetMapping(value = "/messages", produces = "application/json")
     public ResponseEntity<?> getMessageList(@PathVariable("id") long id,
                                             @RequestParam(value = "lastSeenTimestamp", required = false)
-                                            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Optional<LocalDateTime> timestamp) {
+                                            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Optional<LocalDateTime> timestamp,
+                                            @RequestHeader("X-Group-Token") String header) {
 
-        if (timestamp.isPresent()) {
-            return ResponseEntity.ok(messageRepository.findMessagesNewerThanTimestamp(timestamp.get(), id));
+        if (token.equals(header)) {
+            if (timestamp.isPresent()) {
+                return ResponseEntity.ok(messageRepository.findMessagesNewerThanTimestamp(timestamp.get(), id, PageRequest.of(0, 50)));
+            } else {
+                return ResponseEntity.ok(messageRepository.findLast10Messages(id, PageRequest.of(0, 10)));
+            }
         } else {
-            return ResponseEntity.ok(messageRepository.findMessagesByChannelId(id, PageRequest.of(0, 10)));
+            return ResponseEntity.status(401).build();
         }
     }
 
@@ -38,22 +47,32 @@ public class MessageController {
     public ResponseEntity<?> createMessage(@PathVariable("id") long id,
                                            @RequestParam(value = "lastSeenTimestamp", required = false)
                                            @DateTimeFormat(iso=DateTimeFormat.ISO.DATE_TIME) Optional<LocalDateTime> timestamp,
-                                           @RequestBody Message message) {
+                                           @RequestBody Message message,
+                                           @RequestHeader("X-Group-Token") String header) {
 
-        message.setChannelId(id);
-        messageRepository.save(message);
-        LOGGER.info("Persisting: "+ message.toString());
+        if (token.equals(header)) {
+            message.setChannelId(id);
+            messageRepository.save(message);
+            LOGGER.info("Persisting: " + message.toString());
 
-        if (timestamp.isPresent()) {
-            return ResponseEntity.ok(messageRepository.findMessagesNewerThanTimestamp(timestamp.get(), id));
+            if (timestamp.isPresent()) {
+                return ResponseEntity.ok(messageRepository.findMessagesNewerThanTimestamp(timestamp.get(), id, PageRequest.of(0, 50)));
+            } else {
+                return ResponseEntity.ok(messageRepository.findLast10Messages(id, PageRequest.of(0, 10)));
+            }
         } else {
-            return ResponseEntity.ok(message);
+            return ResponseEntity.status(401).build();
         }
     }
 
     @GetMapping(value = "/users", produces = "application/json")
-    public ResponseEntity<?> getUserList(@PathVariable("id") long id) {
+    public ResponseEntity<?> getUserList(@PathVariable("id") long id,
+                                         @RequestHeader("X-Group-Token") String header) {
 
-        return ResponseEntity.ok(messageRepository.findUniqueCreatorsByChannelId(id));
+        if (token.equals(header)) {
+            return ResponseEntity.ok(messageRepository.findUniqueCreatorsByChannelId(id));
+        } else {
+            return ResponseEntity.status(401).build();
+        }
     }
 }
