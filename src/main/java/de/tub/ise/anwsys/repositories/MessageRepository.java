@@ -16,9 +16,9 @@ public interface MessageRepository extends PagingAndSortingRepository<Message, L
     List<String> findUniqueCreatorsByChannelId(@Param("channelId") long channelId);
 
     @Query("SELECT m from Message AS m WHERE m.channel.id = :channelId ORDER BY m.timestamp DESC")
-    Page<Message> findLast10Messages(@Param("channelId") long channelId, Pageable pageable);
+    Page<Message> findMessagesByChannelId(@Param("channelId") long channelId, Pageable pageable);
 
-    @Query("SELECT m from Message AS m WHERE m.channel.id = :channelId AND timestamp >= :timestamp")
+    @Query("SELECT m from Message AS m WHERE m.channel.id = :channelId AND timestamp >= :timestamp ORDER BY m.timestamp DESC")
     Page<Message> findMessagesNewerThanTimestamp(@Param("timestamp") LocalDateTime timestamp, @Param("channelId") long channelId, Pageable pageable);
 
 }
