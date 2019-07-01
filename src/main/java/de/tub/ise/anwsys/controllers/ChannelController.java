@@ -2,11 +2,13 @@ package de.tub.ise.anwsys.controllers;
 
 import de.tub.ise.anwsys.model.Channel;
 import de.tub.ise.anwsys.repositories.ChannelRepository;
+import de.tub.ise.anwsys.resources.ChannelResourceAssembler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,32 +25,37 @@ public class ChannelController {
     @Value("${token}")
     private String token;
 
+    private PagedResourcesAssembler pagedResourcesAssembler = new PagedResourcesAssembler(null, null);
+
     @Autowired
     ChannelRepository channelRepository;
 
-    @GetMapping(produces = "application/json")
-    public ResponseEntity<?> getChannels(@RequestParam(value = "page", required = false) Optional<Integer> page,
-                                         @RequestParam(value = "size", required = false) Optional<Integer> size,
-                                         @RequestHeader("X-Group-Token") String header) {
+    @Autowired
+    ChannelResourceAssembler channelResourceAssembler;
+
+    @GetMapping
+    public ResponseEntity<?> channels(@RequestParam(value = "page", required = false) Optional<Integer> page,
+                                      @RequestParam(value = "size", required = false) Optional<Integer> size,
+                                      @RequestHeader("X-Group-Token") String header) {
 
         if (token.equals(header)) {
             if (page.isPresent() && size.isPresent()) {
-                return ResponseEntity.ok(channelRepository.findAll(PageRequest.of(page.get(), size.get())));
+                return ResponseEntity.ok(pagedResourcesAssembler.toResource(channelRepository.findAll(PageRequest.of(page.get(), size.get())), channelResourceAssembler));
             } else if (page.isPresent() && !size.isPresent()) {
-                return ResponseEntity.ok(channelRepository.findAll(PageRequest.of(page.get(), 20)));
+                return ResponseEntity.ok(pagedResourcesAssembler.toResource(channelRepository.findAll(PageRequest.of(page.get(), 20)), channelResourceAssembler));
             } else if (!page.isPresent() && size.isPresent()) {
-                return ResponseEntity.ok(channelRepository.findAll(PageRequest.of(0, size.get())));
+                return ResponseEntity.ok(pagedResourcesAssembler.toResource(channelRepository.findAll(PageRequest.of(0, size.get())), channelResourceAssembler));
             } else {
-                return ResponseEntity.ok(channelRepository.findAll(PageRequest.of(0, 20)));
+                return ResponseEntity.ok(pagedResourcesAssembler.toResource(channelRepository.findAll(PageRequest.of(0, 20)), channelResourceAssembler));
             }
         } else {
             return ResponseEntity.status(401).build();
         }
     }
 
-    @GetMapping(value = "{id}", produces = "application/json")
-    public ResponseEntity<?> getChannelInformation(@PathVariable("id") long id,
-                                                   @RequestHeader("X-Group-Token") String header) {
+    @GetMapping(value = "/{id}")
+    public ResponseEntity<?> channel(@PathVariable("id") long id,
+                                     @RequestHeader("X-Group-Token") String header) {
 
         if (token.equals(header)) {
             if (channelRepository.findById(id).isPresent()) {
@@ -62,8 +69,8 @@ public class ChannelController {
     }
 
     @PostMapping(consumes = "application/json")
-    public ResponseEntity<?> createChannel(@RequestBody Channel channel,
-                                           @RequestHeader("X-Group-Token") String header)     {
+    public ResponseEntity<?> channel(@RequestBody Channel channel,
+                                     @RequestHeader("X-Group-Token") String header)     {
 
         if (token.equals(header)) {
             if (channelRepository.findByName(channel.getName()) != null) {
