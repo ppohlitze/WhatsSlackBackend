@@ -1,13 +1,14 @@
 package de.tub.ise.anwsys.controllers;
 
 import de.tub.ise.anwsys.model.Message;
+import de.tub.ise.anwsys.repositories.ChannelRepository;
 import de.tub.ise.anwsys.repositories.MessageRepository;
-import de.tub.ise.anwsys.resources.MessageResourceAssembler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -25,24 +26,24 @@ public class MessageController {
     @Value("${token}")
     private String token;
 
-    private PagedResourcesAssembler pagedResourcesAssembler = new PagedResourcesAssembler(null, null);
-
     @Autowired
     MessageRepository messageRepository;
 
     @Autowired
-    MessageResourceAssembler messageResourceAssembler;
+    ChannelRepository channelRepository;
 
     @GetMapping(value = "/messages", produces = "application/json")
     public ResponseEntity<?> messages(@PathVariable("id") long id,
                                       @RequestParam(value = "lastSeenTimestamp", required = false)
                                       @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Optional<LocalDateTime> timestamp,
-                                      @RequestHeader("X-Group-Token") String header) {
+                                      @RequestHeader("X-Group-Token") String header,
+                                      PagedResourcesAssembler pagedResourcesAssembler,
+                                      Pageable pageable) {
         if (token.equals(header)) {
             if (timestamp.isPresent()) {
-                return ResponseEntity.ok(pagedResourcesAssembler.toResource(messageRepository.findMessagesNewerThanTimestamp(timestamp.get(), id, PageRequest.of(0, 50)), messageResourceAssembler));
+                return ResponseEntity.ok(pagedResourcesAssembler.toResource(messageRepository.findMessagesNewerThanTimestamp(timestamp.get(), id, pageable)));
             } else {
-                return ResponseEntity.ok(pagedResourcesAssembler.toResource(messageRepository.findLast10Messages(id, PageRequest.of(0, 10)), messageResourceAssembler));
+                return ResponseEntity.ok(pagedResourcesAssembler.toResource(messageRepository.findLast10Messages(id, pageable)));
             }
         } else {
             return ResponseEntity.status(401).build();
@@ -54,16 +55,18 @@ public class MessageController {
                                      @RequestParam(value = "lastSeenTimestamp", required = false)
                                      @DateTimeFormat(iso=DateTimeFormat.ISO.DATE_TIME) Optional<LocalDateTime> timestamp,
                                      @RequestBody Message message,
-                                     @RequestHeader("X-Group-Token") String header) {
+                                     @RequestHeader("X-Group-Token") String header,
+                                     PagedResourcesAssembler pagedResourcesAssembler,
+                                     Pageable pageable) {
         if (token.equals(header)) {
-            message.setChannelId(id);
+            message.setChannel(channelRepository.findById(id).get());
             messageRepository.save(message);
             LOGGER.info("Persisting: " + message.toString());
 
             if (timestamp.isPresent()) {
-                return ResponseEntity.ok(pagedResourcesAssembler.toResource(messageRepository.findMessagesNewerThanTimestamp(timestamp.get(), id, PageRequest.of(0, 50)), messageResourceAssembler));
+                return ResponseEntity.ok(pagedResourcesAssembler.toResource(messageRepository.findMessagesNewerThanTimestamp(timestamp.get(), id, pageable)));
             } else {
-                return ResponseEntity.ok(pagedResourcesAssembler.toResource(messageRepository.findLast10Messages(id, PageRequest.of(0, 10)), messageResourceAssembler));
+                return ResponseEntity.ok(pagedResourcesAssembler.toResource(messageRepository.findLast10Messages(id, PageRequest.of(0, 10))));
             }
         } else {
             return ResponseEntity.status(401).build();

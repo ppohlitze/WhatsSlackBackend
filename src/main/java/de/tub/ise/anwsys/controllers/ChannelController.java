@@ -2,12 +2,11 @@ package de.tub.ise.anwsys.controllers;
 
 import de.tub.ise.anwsys.model.Channel;
 import de.tub.ise.anwsys.repositories.ChannelRepository;
-import de.tub.ise.anwsys.resources.ChannelResourceAssembler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,29 +24,18 @@ public class ChannelController {
     @Value("${token}")
     private String token;
 
-    private PagedResourcesAssembler pagedResourcesAssembler = new PagedResourcesAssembler(null, null);
-
     @Autowired
     ChannelRepository channelRepository;
-
-    @Autowired
-    ChannelResourceAssembler channelResourceAssembler;
 
     @GetMapping
     public ResponseEntity<?> channels(@RequestParam(value = "page", required = false) Optional<Integer> page,
                                       @RequestParam(value = "size", required = false) Optional<Integer> size,
-                                      @RequestHeader("X-Group-Token") String header) {
+                                      @RequestHeader("X-Group-Token") String header,
+                                      PagedResourcesAssembler pagedResourcesAssembler,
+                                      Pageable pageable) {
 
         if (token.equals(header)) {
-            if (page.isPresent() && size.isPresent()) {
-                return ResponseEntity.ok(pagedResourcesAssembler.toResource(channelRepository.findAll(PageRequest.of(page.get(), size.get())), channelResourceAssembler));
-            } else if (page.isPresent() && !size.isPresent()) {
-                return ResponseEntity.ok(pagedResourcesAssembler.toResource(channelRepository.findAll(PageRequest.of(page.get(), 20)), channelResourceAssembler));
-            } else if (!page.isPresent() && size.isPresent()) {
-                return ResponseEntity.ok(pagedResourcesAssembler.toResource(channelRepository.findAll(PageRequest.of(0, size.get())), channelResourceAssembler));
-            } else {
-                return ResponseEntity.ok(pagedResourcesAssembler.toResource(channelRepository.findAll(PageRequest.of(0, 20)), channelResourceAssembler));
-            }
+            return ResponseEntity.ok(pagedResourcesAssembler.toResource(channelRepository.findAll(pageable)));
         } else {
             return ResponseEntity.status(401).build();
         }

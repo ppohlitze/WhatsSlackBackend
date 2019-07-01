@@ -1,9 +1,6 @@
 package de.tub.ise.anwsys.model;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
@@ -19,7 +16,9 @@ public class Message {
 
     private String creator;
 
-    private long channelId;
+    @ManyToOne
+    @JoinColumn(name = "channel_id")
+    private Channel channel;
 
     public long getId() {
         return id;
@@ -53,12 +52,12 @@ public class Message {
         this.creator = creator;
     }
 
-    public long getChannelId() {
-        return channelId;
+    public Channel getChannel() {
+        return channel;
     }
 
-    public void setChannelId(long channelId) {
-        this.channelId = channelId;
+    public void setChannel(Channel channel) {
+        this.channel = channel;
     }
 
     @Override
@@ -68,7 +67,7 @@ public class Message {
                 ", timestamp=" + timestamp +
                 ", content='" + content + '\'' +
                 ", creator='" + creator + '\'' +
-                ", channelId=" + channelId +
+                ", channel=" + channel +
                 '}';
     }
 }
