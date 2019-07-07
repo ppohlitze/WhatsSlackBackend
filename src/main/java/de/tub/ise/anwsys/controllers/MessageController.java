@@ -20,8 +20,6 @@ import java.util.Optional;
 @RequestMapping("/channels/{id}")
 public class MessageController {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(MessageController.class);
-
     @Value("${token}")
     private String token;
 
@@ -58,7 +56,6 @@ public class MessageController {
         if (token.equals(header)) {
             message.setChannel(channelRepository.findById(id).get());
             messageRepository.save(message);
-            LOGGER.info("Persisting: " + message.toString());
 
             if (timestamp.isPresent()) {
                 return ResponseEntity.ok(pagedResourcesAssembler.toResource(messageRepository.findMessagesNewerThanTimestamp(timestamp.get(), id, PageRequest.of(0, 50))));

@@ -11,7 +11,7 @@ public class HealthController {
     private String token;
 
     @GetMapping(value = "/health", produces = "application/json")
-    public ResponseEntity<?> getHelloWorld(@RequestHeader("X-Group-Token") String header) {
+    public ResponseEntity<?> health(@RequestHeader("X-Group-Token") String header) {
 
         if (token.equals(header)) {
             return ResponseEntity.ok(String.format("Feeling pretty good!"));

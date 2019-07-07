@@ -17,7 +17,7 @@ public class Message {
     private String creator;
 
     @ManyToOne
-    @JoinColumn(name = "channel_id")
+    @JoinColumn
     private Channel channel;
 
     public long getId() {

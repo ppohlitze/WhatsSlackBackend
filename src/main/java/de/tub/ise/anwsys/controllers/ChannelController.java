@@ -2,8 +2,6 @@ package de.tub.ise.anwsys.controllers;
 
 import de.tub.ise.anwsys.model.Channel;
 import de.tub.ise.anwsys.repositories.ChannelRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
@@ -19,15 +17,13 @@ import java.util.Optional;
 @RequestMapping("/channels")
 public class ChannelController {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(ChannelController.class);
-
     @Value("${token}")
     private String token;
 
     @Autowired
     ChannelRepository channelRepository;
 
-    @GetMapping
+    @GetMapping(produces = "application/json")
     public ResponseEntity<?> channels(@RequestParam(value = "page", required = false) Optional<Integer> page,
                                       @RequestParam(value = "size", required = false) Optional<Integer> size,
                                       @RequestHeader("X-Group-Token") String header,
@@ -41,7 +37,7 @@ public class ChannelController {
         }
     }
 
-    @GetMapping(value = "/{id}")
+    @GetMapping(value = "/{id}", produces = "application/json")
     public ResponseEntity<?> channel(@PathVariable("id") long id,
                                      @RequestHeader("X-Group-Token") String header) {
 
@@ -56,7 +52,7 @@ public class ChannelController {
         }
     }
 
-    @PostMapping(consumes = "application/json")
+    @PostMapping(consumes = "application/json", produces = "application/json")
     public ResponseEntity<?> channel(@RequestBody Channel channel,
                                      @RequestHeader("X-Group-Token") String header)     {
 
@@ -65,13 +61,12 @@ public class ChannelController {
                 return ResponseEntity.status(409).build();
             } else {
                 channelRepository.save(channel);
-                LOGGER.info("Persisting: " + channel.toString());
                 URI location = null;
 
                 try {
                     location = new URI("localhost:8080/channels/" + channel.getId());
                 } catch (URISyntaxException e) {
-                    LOGGER.error("URI Syntax wasn't valid", e);
+                    System.out.println("URI Syntax wasn't valid "+ e);
                 }
 
                 return ResponseEntity.created(location).body(channel);
